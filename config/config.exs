@@ -6,8 +6,8 @@ use Mix.Config
 # Configure the main viewport for the Scenic application
 config :scenic_2048, :viewport, %{
       name: :main_viewport,
-      size: {700, 600},
-      default_scene: {Scenic2048.Scene.Splash, Scenic2048.Scene.Sensor},
+      size: {1000, 1000},
+      default_scene: {Scenic2048.Scene.Game2048, nil},
       drivers: [
         %{
           module: Scenic.Driver.Glfw,

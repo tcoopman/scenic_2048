@@ -35,6 +35,7 @@ defmodule Scenic2048.Component.Nav do
         {"Primitives", Scenic2048.Scene.Primitives},
         {"Components", Scenic2048.Scene.Components},
         {"Transforms", Scenic2048.Scene.Transforms},
+        {"2048", Scenic2048.Scene.Game2048},
       ], current_scene}, id: :nav, translate: {70, 15})
     |> digital_clock(text_align: :right, translate: {width - 20, 35})
     |> push_graph()
