@@ -22,7 +22,7 @@ defmodule Scenic2048.Scene.Game2048 do
              |> Path.join("/static/fonts/ClearSans-Medium.ttf")
 
   def init(_, _opts) do
-    Scenic.Cache.File.load(@font_path, @font_hash) |> IO.inspect()
+    Scenic.Cache.File.load(@font_path, @font_hash)
     board_state = initial_state()
 
     graph =
@@ -49,6 +49,7 @@ defmodule Scenic2048.Scene.Game2048 do
 
   def handle_input({:key, {key, :release, _}}, _context, state)
       when key == "left" or key == "right" or key == "up" or key == "down" do
+    key = String.to_atom(key)
     state = update_state(key, state)
     update_board(state.graph, state.board_state) |> push_graph
     {:noreply, state}
@@ -57,27 +58,26 @@ defmodule Scenic2048.Scene.Game2048 do
   def handle_input(_, _context, state), do: {:noreply, state}
 
   defp initial_state() do
-    empty_blocks = for(i <- 1..@dimensions, j <- 1..@dimensions, do: {i, j}) |> Enum.shuffle()
-
-    %{empty_blocks: empty_blocks, blocks: %{}}
+    %{}
     |> update_board_state()
     |> update_board_state()
   end
 
-  defp update_state(_key, state) do
-    %{board_state: %{empty_blocks: empty_blocks, blocks: blocks}, graph: graph} = state
+  defp update_state(key, state) do
+    %{board_state: board_state, graph: graph} = state
 
     board_state =
-      update_board_state(state.board_state)
-      |> IO.inspect()
+      board_state
+      |> reduce(key)
+      |> update_board_state()
 
     %{board_state: board_state, graph: graph}
   end
 
-  defp update_board(graph, %{blocks: blocks}) do
+  defp update_board(graph, board_state) do
     @all_positions
     |> Enum.reduce(graph, fn {x, y}, graph ->
-      number = Map.get(blocks, {x, y}, 0)
+      number = Map.get(board_state, {x, y}, 0)
 
       number_text =
         case number do
@@ -124,19 +124,64 @@ defmodule Scenic2048.Scene.Game2048 do
     end
   end
 
+  defp reduce(board_state, key) do
+    key
+    |> positions()
+    |> Enum.with_index(1)
+    |> Enum.flat_map(fn {row, i} ->
+      Enum.map(row, fn pos ->
+        {Map.get(board_state, pos, 0), pos}
+      end)
+      |> Enum.reject(&match?({0, _}, &1))
+      |> squish([])
+      |> to_position(key, i)
+    end)
+    |> Map.new()
+  end
+
+  defp positions(key) do
+    for i <- 1..@dimensions, do: for j <- indices(key), do: to_tupple(key, i, j)
+  end
+
+  defp to_position(numbers, key, i) do
+    Enum.zip(numbers, indices(key))
+    |> Enum.map(fn {number, index} ->
+      {to_tupple(key, i, index), number}
+    end)
+  end
+
+  defp indices(key) when key == :left or key == :up, do: for i <- 1..@dimensions, do: i
+  defp indices(key) when key == :right or key == :down, do: for i <- @dimensions..1, do: i
+  defp to_tupple(key, i, j) when key == :left or key == :right, do: {j, i}
+  defp to_tupple(key, i, j) when key == :up or key == :down, do: {i, j}
+
+  defp squish(numbers, result) do
+    case numbers do
+      [] -> result |> Enum.reverse()
+      [{a, _}] -> squish([], [a | result])
+      [{a, _}, {b, _} | tl] when a == b -> squish(tl, [a + b | result])
+      [{a, _}, b | tl] when a != b -> squish([b | tl], [a | result])
+    end
+  end
+
   defp block_id(x, y), do: :"block-#{x}-#{y}"
   defp block_text_id(x, y), do: :"block-text-#{x}-#{y}"
 
-  defp update_board_state(%{empty_blocks: []} = x), do: x
+  defp update_board_state(board_state) do
+    empty_blocks = empty_blocks(board_state)
 
-  defp update_board_state(%{empty_blocks: empty_blocks, blocks: blocks}) do
-    [pos | empty_blocks] = empty_blocks
+    case empty_blocks do
+      [] -> board_state
+      empty_blocks ->
+        random_position = Enum.random(empty_blocks)
+        Map.put(board_state, random_position, random_block_number())
+    end
+  end
 
-    blocks =
-      blocks
-      |> Map.put(pos, random_block_number())
-
-    %{empty_blocks: empty_blocks, blocks: blocks}
+  defp empty_blocks(board_state) do
+    Enum.reject(@all_positions, fn pos ->
+      Map.has_key?(board_state, pos)
+    end)
   end
 
   defp block_color(0), do: {:color, {203, 193, 181, 255}}
