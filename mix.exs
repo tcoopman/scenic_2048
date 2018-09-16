@@ -7,8 +7,8 @@ defmodule Scenic2048.MixProject do
       version: "0.1.0",
       elixir: "~> 1.7",
       start_permanent: Mix.env() == :prod,
-      compilers: [:elixir_make] ++ Mix.compilers,
-      make_env: %{"MIX_ENV" => to_string(Mix.env)},
+      compilers: [:elixir_make] ++ Mix.compilers(),
+      make_env: %{"MIX_ENV" => to_string(Mix.env())},
       make_clean: ["clean"],
       deps: deps()
     ]
@@ -43,10 +43,8 @@ defmodule Scenic2048.MixProject do
       # { :scenic_clock, git: "https://github.com/boydm/scenic_clock.git"},
 
       # the ssh versions
-      { :scenic, git: "git@github.com:boydm/scenic.git", override: true },
-      { :scenic_driver_glfw, git: "git@github.com:boydm/scenic_driver_glfw.git"},
-      { :scenic_sensor, git: "git@github.com:boydm/scenic_sensor.git"},
-      { :scenic_clock, git: "git@github.com:boydm/scenic_clock.git"},
+      {:scenic, git: "git@github.com:boydm/scenic.git", override: true},
+      {:scenic_driver_glfw, git: "git@github.com:boydm/scenic_driver_glfw.git"}
 
       # example deps
       # {:dep_from_hexpm, "~> 0.3.0"},

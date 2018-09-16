@@ -4,17 +4,12 @@
 defmodule Scenic2048.Sensor.Supervisor do
   use Supervisor
 
-  alias Scenic2048.Sensor.Temperature
-
   def start_link() do
     Supervisor.start_link(__MODULE__, :ok)
   end
 
   def init(:ok) do
-    children = [
-      {Scenic.Sensor, nil},
-      {Temperature, nil}
-    ]
+    children = []
 
     Supervisor.init(children, strategy: :one_for_one)
   end

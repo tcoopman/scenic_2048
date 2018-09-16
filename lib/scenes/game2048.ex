@@ -140,7 +140,7 @@ defmodule Scenic2048.Scene.Game2048 do
   end
 
   defp positions(key) do
-    for i <- 1..@dimensions, do: for j <- indices(key), do: to_tupple(key, i, j)
+    for i <- 1..@dimensions, do: for(j <- indices(key), do: to_tupple(key, i, j))
   end
 
   defp to_position(numbers, key, i) do
@@ -150,8 +150,8 @@ defmodule Scenic2048.Scene.Game2048 do
     end)
   end
 
-  defp indices(key) when key == :left or key == :up, do: for i <- 1..@dimensions, do: i
-  defp indices(key) when key == :right or key == :down, do: for i <- @dimensions..1, do: i
+  defp indices(key) when key == :left or key == :up, do: for(i <- 1..@dimensions, do: i)
+  defp indices(key) when key == :right or key == :down, do: for(i <- @dimensions..1, do: i)
   defp to_tupple(key, i, j) when key == :left or key == :right, do: {j, i}
   defp to_tupple(key, i, j) when key == :up or key == :down, do: {i, j}
 
@@ -171,7 +171,9 @@ defmodule Scenic2048.Scene.Game2048 do
     empty_blocks = empty_blocks(board_state)
 
     case empty_blocks do
-      [] -> board_state
+      [] ->
+        board_state
+
       empty_blocks ->
         random_position = Enum.random(empty_blocks)
         Map.put(board_state, random_position, random_block_number())

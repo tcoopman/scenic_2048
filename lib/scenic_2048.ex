@@ -12,9 +12,9 @@ defmodule Scenic2048 do
     # start the application with the viewport
     children = [
       supervisor(Scenic2048.Sensor.Supervisor, []),
-      supervisor(Scenic, [viewports: [main_viewport_config]]),
+      supervisor(Scenic, viewports: [main_viewport_config])
     ]
+
     Supervisor.start_link(children, strategy: :one_for_one)
   end
-
 end
